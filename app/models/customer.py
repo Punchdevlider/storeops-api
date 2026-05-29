@@ -25,7 +25,7 @@ class Customer(Base):
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    orders: Mapped[list["Order"]] = relationship(
+    orders: Mapped[list[Order]] = relationship(
         back_populates="customer",
         cascade="all, delete-orphan",
     )

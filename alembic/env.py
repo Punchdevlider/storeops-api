@@ -1,12 +1,10 @@
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from alembic import context
 from app.config import settings
 from app.database import Base
-from app.models import Category, Customer, Order, OrderItem, OrderStatusHistory, Product
-
 
 config = context.config
 

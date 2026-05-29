@@ -1,12 +1,10 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from fastapi import Depends
 
 from app.config import settings
 from app.database import get_db
 from app.routers import categories, customers, orders, products
-
 
 app = FastAPI(
     title=settings.app_name,

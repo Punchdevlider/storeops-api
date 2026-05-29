@@ -1,11 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class OrderStatus(str, Enum):
+class OrderStatus(StrEnum):
     pending = "pending"
     paid = "paid"
     processing = "processing"

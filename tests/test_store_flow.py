@@ -1,14 +1,7 @@
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
 
-from app.main import app
-
-
-client = TestClient(app)
-
-
-def test_full_store_flow():
+def test_full_store_flow(client):
     unique_id = uuid4().hex[:8]
 
     # 1. Create category
@@ -115,3 +108,83 @@ def test_full_store_flow():
     updated_order = status_response.json()
     assert updated_order["status"] == "processing"
     assert len(updated_order["status_history"]) >= 2
+
+def _create_product(client, unique_id, stock=10, is_active=True):
+    category = client.post(
+        "/categories/",
+        json={"name": f"Cat {unique_id}", "description": "test"},
+    ).json()
+
+    return client.post(
+        "/products/",
+        json={
+            "name": f"Product {unique_id}",
+            "sku": f"SKU-{unique_id}",
+            "price": "19.99",
+            "stock_quantity": stock,
+            "is_active": is_active,
+            "category_id": category["id"],
+        },
+    ).json()
+
+
+def _create_customer(client, unique_id):
+    return client.post(
+        "/customers/",
+        json={
+            "first_name": "Test",
+            "last_name": "Customer",
+            "email": f"customer-{unique_id}@example.com",
+            "is_active": True,
+        },
+    ).json()
+
+
+def test_order_with_missing_product_returns_404(client):
+    unique_id = uuid4().hex[:8]
+    customer = _create_customer(client, unique_id)
+
+    response = client.post(
+        "/orders/",
+        json={
+            "customer_id": customer["id"],
+            "items": [{"product_id": 999999, "quantity": 1}],
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_order_exceeding_stock_is_rejected(client):
+    unique_id = uuid4().hex[:8]
+    product = _create_product(client, unique_id, stock=3)
+    customer = _create_customer(client, unique_id)
+
+    response = client.post(
+        "/orders/",
+        json={
+            "customer_id": customer["id"],
+            "items": [{"product_id": product["id"], "quantity": 5}],
+        },
+    )
+
+    assert response.status_code == 400
+
+
+def test_duplicate_products_in_order_are_rejected(client):
+    unique_id = uuid4().hex[:8]
+    product = _create_product(client, unique_id, stock=10)
+    customer = _create_customer(client, unique_id)
+
+    response = client.post(
+        "/orders/",
+        json={
+            "customer_id": customer["id"],
+            "items": [
+                {"product_id": product["id"], "quantity": 1},
+                {"product_id": product["id"], "quantity": 1},
+            ],
+        },
+    )
+
+    assert response.status_code == 400

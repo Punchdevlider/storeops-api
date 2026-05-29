@@ -7,6 +7,10 @@ from app.models.product import Product
 from app.schemas.order import OrderCreate
 
 
+class OrderError(Exception):
+    """Raised when an order cannot be created due to a business rule violation."""
+
+
 def get_orders(
     db: Session,
     skip: int = 0,
@@ -43,7 +47,26 @@ def create_order(db: Session, order_data: OrderCreate):
     total_amount = Decimal("0.00")
 
     for item_data in order_data.items:
-        product = db.query(Product).filter(Product.id == item_data.product_id).first()
+        # Lock the product row for the duration of the transaction so two
+        # concurrent orders cannot both read the same stock and oversell it.
+        product = (
+            db.query(Product)
+            .filter(Product.id == item_data.product_id)
+            .with_for_update()
+            .first()
+        )
+
+        # The service must not rely on the router having validated input.
+        if product is None:
+            raise OrderError(f"Product with id {item_data.product_id} not found.")
+
+        if not product.is_active:
+            raise OrderError(f"Product with id {item_data.product_id} is not active.")
+
+        if product.stock_quantity < item_data.quantity:
+            raise OrderError(
+                f"Not enough stock for product with id {item_data.product_id}."
+            )
 
         unit_price = product.price
         total_price = unit_price * item_data.quantity

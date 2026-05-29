@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.customer import CustomerCreate, CustomerRead, CustomerUpdate
 from app.services import customer as customer_service
-
 
 router = APIRouter(
     prefix="/customers",
@@ -14,8 +13,8 @@ router = APIRouter(
 
 @router.get("/", response_model=list[CustomerRead])
 def list_customers(
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=200),
     is_active: bool | None = None,
     db: Session = Depends(get_db),
 ):

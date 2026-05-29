@@ -1,0 +1,20 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+# E/F = pyflakes + pycodestyle, I = isort, UP = pyupgrade, B = bugbear
+select = ["E", "F", "I", "UP", "B"]
+# B008: FastAPI deliberately uses `Depends(...)` as a default argument value.
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Alembic migrations are largely auto-generated; don't enforce line length.
+"alembic/versions/*.py" = ["E501"]
+# SQLAlchemy models use string forward references in Mapped[...] / relationship(),
+# which ruff cannot resolve statically. The mapper resolves them at runtime.
+"app/models/*.py" = ["F821"]
+# __init__ re-exports models so they register on Base.metadata; the names are
+# intentionally "unused" at the import site but required as a side effect.
+"app/models/__init__.py" = ["F401"]
+"tests/conftest.py" = ["F401"]

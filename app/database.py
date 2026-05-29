@@ -3,7 +3,6 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import settings
 
-
 engine = create_engine(settings.database_url)
 
 SessionLocal = sessionmaker(
@@ -22,5 +21,10 @@ def get_db():
 
     try:
         yield db
+    except Exception:
+        # Roll back any partially applied changes if the request fails,
+        # so a failed order does not leave the session in a dirty state.
+        db.rollback()
+        raise
     finally:
         db.close()

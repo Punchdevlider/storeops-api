@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -6,7 +6,7 @@ from app.schemas.order import OrderCreate, OrderRead, OrderStatus, OrderStatusUp
 from app.services import customer as customer_service
 from app.services import order as order_service
 from app.services import product as product_service
-
+from app.services.order import OrderError
 
 router = APIRouter(
     prefix="/orders",
@@ -16,8 +16,8 @@ router = APIRouter(
 
 @router.get("/", response_model=list[OrderRead])
 def list_orders(
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=200),
     status_filter: OrderStatus | None = None,
     customer_id: int | None = None,
     db: Session = Depends(get_db),
@@ -85,7 +85,16 @@ def create_order(
                 detail=f"Not enough stock for product with id {item.product_id}.",
             )
 
-    return order_service.create_order(db=db, order_data=order_data)
+    # Early validation gives clear 4xx errors before touching the database.
+    # The service re-checks stock under a row lock to guard against the race
+    # between this check and the actual write.
+    try:
+        return order_service.create_order(db=db, order_data=order_data)
+    except OrderError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
 
 
 @router.get("/{order_id}", response_model=OrderRead)

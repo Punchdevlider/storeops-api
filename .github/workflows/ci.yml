@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Run tests
+        env:
+          # Tests use an isolated in-memory SQLite database (see tests/conftest.py).
+          # These values only satisfy Settings validation at import time.
+          POSTGRES_DB: storeops_db
+          POSTGRES_USER: storeops_user
+          POSTGRES_PASSWORD: storeops_password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          DATABASE_URL: postgresql://storeops_user:storeops_password@localhost:5432/storeops_db
+        run: pytest -q
