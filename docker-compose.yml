@@ -1,0 +1,31 @@
+services:
+  api:
+    build: .
+    container_name: storeops_api
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    container_name: storeops_db
+    restart: always
+    environment:
+      POSTGRES_DB: storeops_db
+      POSTGRES_USER: storeops_user
+      POSTGRES_PASSWORD: storeops_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - storeops_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  storeops_postgres_data:
