@@ -1,4 +1,4 @@
-﻿# StoreOps API
+# StoreOps API
 
 ![CI](https://github.com/Punchdevlider/storeops-api/actions/workflows/ci.yml/badge.svg)
 
@@ -8,10 +8,9 @@ categories, products, customers, orders, stock levels, and order status history.
 It is built with **FastAPI**, **PostgreSQL**, **SQLAlchemy 2.0**, **Alembic**,
 **Docker Compose**, and **pytest**.
 
-
 ## Highlights
 
-* Layered architecture: `routers` (HTTP) в†’ `services` (business logic) в†’ `models` (ORM).
+* Layered architecture: `routers` (HTTP) -> `services` (business logic) -> `models` (ORM).
 * Fully typed SQLAlchemy 2.0 models using `Mapped[...]` and `mapped_column`.
 * Pydantic v2 schemas for request validation and response serialization.
 * Atomic order creation: stock is validated and decremented inside a single
@@ -24,24 +23,24 @@ It is built with **FastAPI**, **PostgreSQL**, **SQLAlchemy 2.0**, **Alembic**,
 
 ## Tech Stack
 
-Python 3.12 В· FastAPI В· PostgreSQL В· SQLAlchemy 2.0 В· Alembic В· Docker В·
-Docker Compose В· pytest В· ruff
+Python 3.12 - FastAPI - PostgreSQL - SQLAlchemy 2.0 - Alembic - Docker -
+Docker Compose - pytest - ruff
 
 ## Architecture
 
 ```text
 HTTP request
-    в”‚
-    в–ј
+    |
+    v
 routers/        validate input, map domain errors to HTTP status codes
-    в”‚
-    в–ј
+    |
+    v
 services/       business logic, transactions, stock locking
-    в”‚
-    в–ј
+    |
+    v
 models/         SQLAlchemy ORM entities
-    в”‚
-    в–ј
+    |
+    v
 PostgreSQL
 ```
 
@@ -53,24 +52,24 @@ on failure and always closes the session.
 
 ```text
 storeops-api/
-в”њв”Ђв”Ђ app/
-в”‚   в”њв”Ђв”Ђ main.py          # FastAPI app, root and health endpoints
-в”‚   в”њв”Ђв”Ђ config.py        # Settings loaded from environment / .env
-в”‚   в”њв”Ђв”Ђ database.py      # Engine, session factory, get_db dependency
-в”‚   в”њв”Ђв”Ђ models/          # SQLAlchemy ORM models
-в”‚   в”њв”Ђв”Ђ schemas/         # Pydantic request/response models
-в”‚   в”њв”Ђв”Ђ routers/         # API endpoints
-в”‚   в””в”Ђв”Ђ services/        # Business logic and DB access
-в”њв”Ђв”Ђ alembic/             # Database migrations
-в”њв”Ђв”Ђ tests/               # pytest suite (isolated SQLite DB)
-в”њв”Ђв”Ђ .github/workflows/   # GitHub Actions CI
-в”њв”Ђв”Ђ Dockerfile
-в”њв”Ђв”Ђ docker-compose.yml
-в”њв”Ђв”Ђ requirements.txt
-в”њв”Ђв”Ђ pyproject.toml       # ruff configuration
-в”њв”Ђв”Ђ pytest.ini
-в”њв”Ђв”Ђ .env.example
-в””в”Ђв”Ђ README.md
+|-- app/
+|   |-- main.py          # FastAPI app, root and health endpoints
+|   |-- config.py        # Settings loaded from environment / .env
+|   |-- database.py      # Engine, session factory, get_db dependency
+|   |-- models/          # SQLAlchemy ORM models
+|   |-- schemas/         # Pydantic request/response models
+|   |-- routers/         # API endpoints
+|   `-- services/        # Business logic and DB access
+|-- alembic/             # Database migrations
+|-- tests/               # pytest suite (isolated SQLite DB)
+|-- .github/workflows/   # GitHub Actions CI
+|-- Dockerfile
+|-- docker-compose.yml
+|-- requirements.txt
+|-- pyproject.toml       # ruff configuration
+|-- pytest.ini
+|-- .env.example
+`-- README.md
 ```
 
 ## Getting Started
@@ -124,7 +123,7 @@ ruff check .
 | Orders     | `GET/POST /orders/`, `GET /orders/{id}`, `PATCH /orders/{id}/status` |
 
 List endpoints support `skip` and `limit` query parameters (`limit` is capped
-at 200). Products and orders also support filtering вЂ” see Swagger for details.
+at 200). Products and orders also support filtering -- see Swagger for details.
 
 ## Example: Creating an Order
 
